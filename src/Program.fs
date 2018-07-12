@@ -1,90 +1,111 @@
 ﻿module PluckDataDownloader.Main
 
-open NDesk.Options
+open Argu
 open System
 
-let ShowHelp(p:OptionSet) =
-    printfn "Usage: PluckDataDownloader (specify at least one option)"
-    p.WriteOptionDescriptions Console.Out
-    printfn ""
-    printfn "Pluck Documentation: http://connect.pluck.com/docs/Pluck/contentDownload/PluckContentDownload51.pdf"
-    printfn "Merging CSV Files: execute \"copy *.csv merged.csv\" in appropriate csv directory"
+let mutable show_help = false
+let mutable startDate = DateTime.Today
+let mutable endDate = DateTime.Today
+let mutable csvDir = "csv"
+let mutable logFile = "log.txt"
+let mutable writeHeaders = false
+let mutable accesskey = None
+let mutable baseuri = None
+let mutable chunks : int option = None
+let mutable bounds : int option = None
+let mutable itemsPerPage = 500
+let mutable plucktypes = seq [|PluckContentType.Rating; PluckContentType.Review|]
 
+type CLIArguments =
+    | [<Mandatory>] AccessKey of string
+    | [<Mandatory>] BaseUri of string
+    | WriteHeaderFiles of bool
+    | StartDate of string
+    | EndDate of string
+    | CsvDir of string
+    | LogFile of string
+    | PluckTypes of PluckContentType list
+    | ItemsPerPage of int
+    | Chunks of int
+    | Bounds of int
+with
+    interface IArgParserTemplate with
+        member s.Usage =
+            match s with
+            | AccessKey _ -> "example: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+            | BaseUri _ -> "example: http://xyz.com/"
+            | WriteHeaderFiles _ -> "default: false"
+            | StartDate _ -> " default: " + (startDate).ToString("yyyy-MM-dd")
+            | EndDate _ -> " default: "+ (endDate).ToString("yyyy-MM-dd")
+            | CsvDir _-> "default: " + csvDir
+            | LogFile _-> " default: " + logFile
+            | PluckTypes _-> " default: rating, review"
+            | ItemsPerPage _-> " default:" + (itemsPerPage).ToString() + " max: 1000"
+            | Chunks _ -> "example: 30"
+            | Bounds _ -> "example: 30"
 
 [<EntryPoint>]
 let main argv =
-    let mutable show_help = false
-    let mutable startDate = DateTime.Today
-    let mutable endDate = DateTime.Today
-    let mutable csvDir = "csv"
-    let mutable logFile = "log.txt"
-    let mutable writeHeaders = false
-    let mutable accesskey = None
-    let mutable baseuri = None
-    let mutable chunks : int option = None
-    let mutable bounds : int option = None
-    let mutable itemsPerPage = 500
-    let mutable plucktypes = [|PluckContentType.Rating; PluckContentType.Review|]
+    let parser = ArgumentParser.Create<CLIArguments>(programName = "PluckDataDownloader.exe")
+    let results = parser.ParseCommandLine ()
 
-    let p = OptionSet()
-    p.Add("key|accesskey="       , " example: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"       , fun v -> accesskey <- Some v)      |> ignore
-    p.Add("uri|baseuri="         , " example: http://xyz.com/"                            , fun v -> baseuri <- Some v)        |> ignore
-    p.Add("whf|writeHeaderFiles" , " default: false"                                      , fun v -> writeHeaders <- isNull v) |> ignore
-    p.Add("sd|startDate="        , " default: " + (startDate).ToString("yyyy-MM-dd")      , fun v -> startDate <- v )          |> ignore
-    p.Add("ed|endDate="          , " default: "+ (endDate).ToString("yyyy-MM-dd")         , fun v -> endDate <- v )            |> ignore
-    p.Add("cd|csvDir="           , " default: " + csvDir                                  , fun v -> csvDir <- v)              |> ignore
-    p.Add("lf|logFile="          , " default: " + logFile                                 , fun v -> logFile <- v )            |> ignore
-    p.Add("pt|pluckTypes="       , " default: rating, review"                             , fun (v:string) -> plucktypes <- v.Split(',')
-                                                                                                           |> Array.map (fun x -> Enum.Parse(typeof<PluckContentType>, x , true) :?> PluckContentType))
-                                                                                                                               |> ignore
-    p.Add("ipp|itemsPerPage="    , " default:" + (itemsPerPage).ToString() + " max: 1000" , fun v -> itemsPerPage <- v)        |> ignore
-    p.Add("c|chunks="            , " example: 30"                                         , fun v -> chunks <- Some v)         |> ignore
-    p.Add("b|bounds="            , " example: 30"                                         , fun v -> bounds <- Some v)         |> ignore
-    p.Add("h|help"               , "show this message and exit"                           , fun v -> show_help <- isNull v)    |> ignore
+    accesskey <- results.TryGetResult AccessKey
+    baseuri <- results.TryGetResult BaseUri
+    writeHeaders <- results.GetResult (WriteHeaderFiles, defaultValue = false)
 
-    let mutable extra = []
-    try
-        extra <- p.Parse(argv) |> List.ofSeq
-        if Option.isNone accesskey then failwith "accesskey must be supplied"
-        if Option.isNone baseuri then failwith "baseuri must be supplied"
-        if startDate.Date > endDate.Date then failwith "startDate cannot be greater than endDate"
-        if endDate.Date > DateTime.Now.Date then failwith "endDate cannot be greater than current date"
-    with
-       | e -> printfn "\nPluckDataDownloader: "
-              printfn "\n%s\n" e.Message
-              printfn "Try `PluckDataDownloader --help' for more information."
-              show_help <- true
-
-    if show_help || extra.Length > 0 || argv.Length = 0
-    then
-        ShowHelp(p)
+    let sd = results.GetResult (StartDate, defaultValue = startDate.ToString()) : string
+    let sdValid, startDate0 = DateTime.TryParse sd
+    if sdValid then
+       startDate <- startDate0
     else
-        let logger =
-               Util.Logger logFile
+       printfn "\n%s\n" (parser.PrintUsage ())
+       failwith ""
 
-        try
-            CSVFileOps.WriteDirs csvDir plucktypes
+    let ed = results.GetResult (EndDate, defaultValue = endDate.ToString()) : string
+    let edValid, endDate0 = DateTime.TryParse ed
+    if edValid then
+       endDate <- endDate0
+    else
+       printfn "\n%s\n" (parser.PrintUsage ())
+       failwith ""
 
-            if writeHeaders then
-                CSVFileOps.WriteCSVHeaders csvDir plucktypes Parsers.GetCSVHeader
+    csvDir <- results.GetResult (CsvDir, defaultValue = csvDir)
+    logFile <- results.GetResult (LogFile, defaultValue = logFile)
+    chunks <- results.TryGetResult Chunks
+    bounds <- results.TryGetResult Bounds
+    itemsPerPage <- results.GetResult (ItemsPerPage, defaultValue = itemsPerPage)
+    plucktypes <- seq <| results.GetResult (PluckTypes, defaultValue = Seq.toList plucktypes)
 
-            let execQueryStep =
-                  QueryRunner.GenContent 
-                    (ApiClient.ContentDownload logger baseuri.Value accesskey.Value)
-                    (QueryStateProcessor.ParseQueryState logger)
-                  >> QueryRunner.FoldContent
+    if startDate.Date > endDate.Date then failwith "startDate cannot be greater than endDate"
+    if endDate.Date > DateTime.Now.Date then failwith "endDate cannot be greater than current date"
 
-            let handleQueryResult =
-                   CSVFileOps.WriteCsvFileResultForDate csvDir
+    let logger =
+           Util.Logger logFile
 
-            let mkJob =
-                   QueryRunner.RunQuery itemsPerPage execQueryStep handleQueryResult
+    try
+        CSVFileOps.WriteDirs csvDir plucktypes
 
-            match (chunks, bounds) with
-            | (Some c, _)  -> Scheduler.ExecuteJobsChunked c logger plucktypes startDate endDate mkJob
-            | (_ , Some b) -> Scheduler.ExecuteJobsBounded b logger plucktypes startDate endDate mkJob
-            | _      -> Scheduler.ExecuteJobsByDate    logger plucktypes startDate endDate mkJob
+        if writeHeaders then
+            CSVFileOps.WriteCSVHeaders csvDir plucktypes Parsers.GetCSVHeader
 
-        with
-           | e -> logger (e.ToString())
+        let execQueryStep =
+              QueryRunner.GenContent 
+                (ApiClient.ContentDownload logger baseuri.Value accesskey.Value)
+                (QueryStateProcessor.ParseQueryState logger)
+              >> QueryRunner.FoldContent
+
+        let handleQueryResult =
+               CSVFileOps.WriteCsvFileResultForDate csvDir
+
+        let mkJob =
+               QueryRunner.RunQuery itemsPerPage execQueryStep handleQueryResult
+
+        match (chunks, bounds) with
+        | (Some c, _)  -> Scheduler.ExecuteJobsChunked c logger plucktypes startDate endDate mkJob
+        | (_ , Some b) -> Scheduler.ExecuteJobsBounded b logger plucktypes startDate endDate mkJob
+        | _      -> Scheduler.ExecuteJobsByDate    logger plucktypes startDate endDate mkJob
+
+    with
+       | e -> logger (e.ToString())
+
     0
