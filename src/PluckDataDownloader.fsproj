@@ -23,4 +23,8 @@
     <PackageReference Include="NDesk.Options" Version="0.2.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Update="System.ValueTuple" Version="4.5.0" />
+  </ItemGroup>
+
 </Project>
