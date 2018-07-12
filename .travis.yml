@@ -1,6 +1,4 @@
 language: csharp
 dist: trusty
 mono: latest
-solution: PluckDataDownloaderFSharp.fsproj
-install:
- - mono .paket/paket.exe restore
+solution: PluckDataDownloader.sln
