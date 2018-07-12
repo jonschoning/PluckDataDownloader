@@ -1,10 +1,5 @@
 # PluckDataDownloader [![Build Status](https://travis-ci.org/jonschoning/PluckDataDownloader.svg?branch=master)](https://travis-ci.org/jonschoning/PluckDataDownloader)
 
-# Installation
-
-1. run `.paket/paket.exe install` to install dependencies
-2. build project with msbuild
-
 ```
 PluckDataDownloader: 
 
