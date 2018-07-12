@@ -26,6 +26,8 @@ module QueryRunner =
             }
     
     let FoldContent parsers =
-        AsyncSeq.fold (fun s (p : Parsers.Parser) -> 
+        let state = InitialState ()
+        let f s (p : Parsers.Parser) =
             p.AppendParsedPageTo(s)
-            s) (InitialState()) parsers
+            s
+        AsyncSeq.fold f state parsers
