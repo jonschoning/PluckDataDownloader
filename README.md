@@ -1,30 +1,26 @@
 # PluckDataDownloader [![Build Status](https://travis-ci.org/jonschoning/PluckDataDownloader.svg?branch=master)](https://travis-ci.org/jonschoning/PluckDataDownloader)
 
 ```
-PluckDataDownloader: 
+USAGE: PluckDataDownloader.exe [--help] --accesskey <string> --baseuri <string> [--writeheaderfiles <bool>]
+                               [--startdate <string>] [--enddate <string>] [--csvdir <string>] [--logfile <string>]
+                               [--plucktypes [<externalresource|rating|review|userprofile>...]] [--itemsperpage <int>]
+                               [--chunks <int>] [--bounds <int>]
 
-accesskey must be supplied
-baseuri must be supplied
+OPTIONS:
 
-Try `PluckDataDownloader --help' for more information.
-Usage: PluckDataDownloader (specify at least one option)
-      --key, --accesskey=VALUE
-                              example: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
-      --uri, --baseuri=VALUE  example: http://xyz.com/
-      --whf, --writeHeaderFiles
-                              default: false
-      --sd, --startDate=VALUE
-                              default: 2015-07-01
-      --ed, --endDate=VALUE   default: 2015-07-01
-      --cd, --csvDir=VALUE    default: csv
-      --lf, --logFile=VALUE   default: log.txt
-      --pt, --pluckTypes=VALUE
-                              default: rating,review
-      --ipp, --itemsPerPage=VALUE
-                              default:500 max: 1000
-  -c, --chunks=VALUE          example: 30
-  -h, --help                 show this message and exit
+    --accesskey <string>  example: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+    --baseuri <string>    example: http://xyz.com/
+    --writeheaderfiles <bool>
+                          default: false
+    --startdate <string>   default: 2018-07-12
+    --enddate <string>     default: 2018-07-12
+    --csvdir <string>     default: csv
+    --logfile <string>     default: log.txt
+    --plucktypes [<externalresource|rating|review|userprofile>...]
+                           default: rating, review
+    --itemsperpage <int>   default:500 max: 1000
+    --chunks <int>        example: 30
+    --bounds <int>        example: 30
+    --help                display this list of options.
 
-Pluck Documentation: http://connect.pluck.com/docs/Pluck/contentDownload/PluckContentDownload51.pdf
-Merging CSV Files: execute "copy *.csv merged.csv" in appropriate csv directory
 ```
