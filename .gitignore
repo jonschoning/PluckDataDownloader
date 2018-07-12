@@ -17,7 +17,6 @@ _[Ss]cripts
 *.psess
 *.orig
 *.vspscc
-*.sln
 packages
 csv
 log.txt
