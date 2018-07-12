@@ -1,4 +1,4 @@
-﻿namespace PluckDataDownloader
+namespace PluckDataDownloader
 
 open System
 
