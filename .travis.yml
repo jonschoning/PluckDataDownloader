@@ -1,4 +1,0 @@
-language: csharp
-dist: trusty
-mono: latest
-solution: PluckDataDownloader.sln

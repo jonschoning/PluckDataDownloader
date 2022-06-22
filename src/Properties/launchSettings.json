@@ -1,7 +1,8 @@
 {
   "profiles": {
     "PluckDataDownloader": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "commandLineArgs": "--accesskey 12345 --baseuri http://example.com"
     }
   }
 }

@@ -1,4 +1,4 @@
-# PluckDataDownloader [![Build Status](https://travis-ci.org/jonschoning/PluckDataDownloader.svg?branch=master)](https://travis-ci.org/jonschoning/PluckDataDownloader)
+# PluckDataDownloader
 
 ```
 USAGE: PluckDataDownloader.exe [--help] --accesskey <string> --baseuri <string> [--writeheaderfiles <bool>]
