@@ -25,3 +25,5 @@ run.sh
 *.TMP
 paket-files
 .vs
+
+.fake

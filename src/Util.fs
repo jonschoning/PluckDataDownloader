@@ -2,8 +2,6 @@ namespace PluckDataDownloader
 
 module Util =
     open System
-    open System.IO
-    open System.Text
     
     let SplitChunks n =
         let one, append, empty = Seq.singleton, Seq.append, Seq.empty

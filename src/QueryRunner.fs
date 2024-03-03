@@ -1,7 +1,6 @@
 namespace PluckDataDownloader
 
 module QueryRunner =
-    open System
     open System.Text
     open FSharp.Control
     

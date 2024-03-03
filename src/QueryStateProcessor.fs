@@ -1,8 +1,6 @@
 namespace PluckDataDownloader
 
 module QueryStateProcessor =
-    open System
-    open System.Text
     open System.Xml
     
     let SetNextPage state = { state with Page = state.Page + 1 }

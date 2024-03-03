@@ -2,7 +2,6 @@ namespace PluckDataDownloader
 
 open System
 open System.IO
-open System.Text
 
 module CSVFileOps =
     let WriteDirs csvDir pluckTypes =
